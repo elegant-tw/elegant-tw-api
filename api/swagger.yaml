@@ -1,0 +1,122 @@
+openapi: 3.0.3
+info:
+  title: Elegant TW - OpenAPI 3.0
+  description: |-
+    言雅：言之隨機，雅之名篇。
+
+    這裡有關他的 API 設計，使用 OpenAPI 3.0 製作，你可以使用 `swagger-codegen` 來去產生框架。
+  termsOfService: http://elegant.tw/terms/
+  contact:
+    email: contact@elegant.tw
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.0.1
+servers:
+- url: https://api.elegant.tw
+tags:
+- name: sentence
+  description: Sentence
+paths:
+  /:
+    get:
+      tags:
+      - sentence
+      summary: Get random a sentence
+      description: Returns a sentence
+      operationId: getRandomSentence
+      parameters:
+      - name: c
+        in: query
+        description: Status values that need to be considered for filter
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - a
+            - b
+            - c
+            - d
+          default: []
+      - name: min_length
+        in: query
+        description: Sentence minimum length
+        required: false
+        style: form
+        explode: true
+        schema:
+          maximum: 30
+          minimum: 0
+          type: integer
+          default: 0
+      - name: max_length
+        in: query
+        description: Sentence maximum length
+        required: false
+        style: form
+        explode: true
+        schema:
+          maximum: 30
+          minimum: 0
+          type: integer
+          default: 30
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sentence'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Sentence:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 42
+        sentence:
+          type: string
+          example: This is a book.
+        category:
+          type: string
+          description: Category
+          example: i
+          enum:
+          - a
+          - b
+          - c
+        from:
+          type: string
+          description: From where
+          example: Anonymous
+        from_who:
+          type: string
+          description: From who
+          example: Anonymous
+      example:
+        sentence: This is a book.
+        from: Anonymous
+        id: 42
+        category: i
+        from_who: Anonymous
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Bad request
