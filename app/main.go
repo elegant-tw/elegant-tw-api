@@ -25,8 +25,11 @@ import (
 )
 
 func main() {
-	logrus.Info("HTTP server started")
+
 	cfg, err := utils.Read()
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
 	db, err := sql.Open(
 		"postgres",
@@ -43,6 +46,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
+	logrus.Info("Starting migration.")
 	m, err := migrate.New(
 		"file://db/migrations",
 		fmt.Sprintf(
@@ -51,10 +55,14 @@ func main() {
 		),
 	)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
-	if err := m.Up(); err != migrate.ErrNoChange {
-		log.Fatal(err)
+	if err := m.Up(); err != nil {
+		if err == migrate.ErrNoChange {
+			logrus.Info("No migrate up.")
+		} else {
+			logrus.Fatal(err)
+		}
 	}
 
 	router := gin.Default()
@@ -63,6 +71,7 @@ func main() {
 	sentenceUsecase := _sentenceUsecase.NewSentenceUsecase(sentenceRepo)
 	_sentenceHandlerHttpDelivery.NewSentenceHandler(router, sentenceUsecase)
 
+	logrus.Info("HTTP server started.")
 	srvStart(router, *cfg)
 }
 
