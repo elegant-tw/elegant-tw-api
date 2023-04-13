@@ -83,7 +83,7 @@ func srvStart(router *gin.Engine, cfg utils.Config) {
 	defer stop()
 
 	srv := &http.Server{
-		Addr:    cfg.ServerAddr,
+		Addr:    cfg.ServerAddr + ":" + cfg.ServerPort,
 		Handler: router,
 	}
 

@@ -21,6 +21,7 @@ type Config struct {
 
 	// HTTP Server Port
 	ServerAddr string `mapstructure:"SERVER_ADDR"`
+	ServerPort string `mapstructure:"SERVER_PORT"`
 }
 
 func Read() (*Config, error) {
