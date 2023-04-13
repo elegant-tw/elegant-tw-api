@@ -28,6 +28,25 @@ func Read() (*Config, error) {
 	viper.SetConfigFile(".env")
 	viper.AutomaticEnv()
 
+	viper.BindEnv("DEBUG")
+	viper.SetDefault("DEBUG", false)
+
+	viper.BindEnv("GIN_MODE")
+	viper.SetDefault("GIN_MODE", "release")
+
+	viper.BindEnv("DB_USERNAME")
+	viper.BindEnv("DB_PASSWORD")
+	viper.BindEnv("DB_HOST")
+	viper.BindEnv("DB_PORT")
+	viper.SetDefault("DB_PORT", 5432)
+	viper.BindEnv("DB_NAME")
+	viper.SetDefault("DB_NAME", "elegant")
+
+	viper.BindEnv("SERVER_ADDR")
+	viper.SetDefault("SERVER_ADDR", "0.0.0.0")
+	viper.BindEnv("SERVER_PORT")
+	viper.SetDefault("SERVER_PORT", 3000)
+
 	viper.SetConfigType("dotenv")
 	if err := viper.ReadInConfig(); err != nil {
 		logrus.Warnf("Warning, there is no config file: %v\n", err)
