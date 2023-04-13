@@ -26,3 +26,6 @@ go.work
 
 # Temporary file
 tmp/
+
+# GitHub file
+.github/
