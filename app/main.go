@@ -65,6 +65,8 @@ func main() {
 		}
 	}
 
+	gin.SetMode(cfg.GinMode)
+
 	router := gin.Default()
 
 	sentenceRepo := _sentenceRepo.NewpostgresqlSentenceRepoistory(db)

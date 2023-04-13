@@ -9,6 +9,9 @@ type Config struct {
 	// Debug Mode Enabled
 	DebugMode bool `mapstructure:"DEBUG"`
 
+	// Gin Mode
+	GinMode string `mapstructure:"GIN_MODE"`
+
 	// Database
 	DBUsername string `mapstructure:"DB_USERNAME"`
 	DBPassword string `mapstructure:"DB_PASSWORD"`
