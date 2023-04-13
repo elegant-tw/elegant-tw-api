@@ -14,6 +14,8 @@ import (
 	_sentenceUsecase "elegant-tw-api/sentence/usecase"
 	"elegant-tw-api/utils"
 
+	"github.com/getsentry/sentry-go"
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -28,6 +30,16 @@ func main() {
 	cfg, err := utils.Read()
 	if err != nil {
 		logrus.Fatal(err)
+	}
+
+	if cfg.SentryEnabled {
+		if err := sentry.Init(sentry.ClientOptions{
+			Dsn:              cfg.SentryDSN,
+			EnableTracing:    true,
+			TracesSampleRate: cfg.SentryTracesRate,
+		}); err != nil {
+			logrus.Printf("Sentry initialization failed: %v\n", err)
+		}
 	}
 
 	logrus.Info("Connecting to database...")
@@ -69,6 +81,10 @@ func main() {
 	gin.SetMode(cfg.GinMode)
 
 	router := gin.Default()
+
+	if cfg.SentryEnabled {
+		router.Use(sentrygin.New(sentrygin.Options{}))
+	}
 
 	sentenceRepo := _sentenceRepo.NewpostgresqlSentenceRepoistory(db)
 	sentenceUsecase := _sentenceUsecase.NewSentenceUsecase(sentenceRepo)

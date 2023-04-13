@@ -22,6 +22,11 @@ type Config struct {
 	// HTTP Server Port
 	ServerAddr string `mapstructure:"SERVER_ADDR"`
 	ServerPort string `mapstructure:"SERVER_PORT"`
+
+	// Sentry
+	SentryEnabled    bool    `mapstructure:"SENTRY_ENABLED"`
+	SentryDSN        string  `mapstructure:"SENTRY_DSN"`
+	SentryTracesRate float64 `mapstructure:"SENTRY_TRACESRATE"`
 }
 
 func Read() (*Config, error) {
