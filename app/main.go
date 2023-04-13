@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 	"os/signal"
 	"syscall"
@@ -59,7 +58,7 @@ func main() {
 	}
 	if err := m.Up(); err != nil {
 		if err == migrate.ErrNoChange {
-			logrus.Info("No migrate up.")
+			logrus.Info("Nothing to migrate.")
 		} else {
 			logrus.Fatal(err)
 		}
@@ -91,7 +90,7 @@ func srvStart(router *gin.Engine, cfg utils.Config) {
 	// it won't block the graceful shutdown handling below
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
+			logrus.Fatalf("listen: %s\n", err)
 		}
 	}()
 
@@ -100,15 +99,15 @@ func srvStart(router *gin.Engine, cfg utils.Config) {
 
 	// Restore default behavior on the interrupt signal and notify user of shutdown.
 	stop()
-	log.Println("shutting down gracefully, press Ctrl+C again to force")
+	logrus.Println("shutting down gracefully, press Ctrl+C again to force")
 
 	// The context is used to inform the server it has 5 seconds to finish
 	// the request it is currently handling
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown: ", err)
+		logrus.Fatal("Server forced to shutdown: ", err)
 	}
 
-	log.Println("Server exiting")
+	logrus.Println("Server exiting")
 }
