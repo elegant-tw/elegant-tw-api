@@ -30,6 +30,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
+	logrus.Info("Connecting to database...")
 	db, err := sql.Open(
 		"postgres",
 		fmt.Sprintf(
@@ -44,6 +45,7 @@ func main() {
 	if err = db.Ping(); err != nil {
 		logrus.Fatal(err)
 	}
+	logrus.Info("Connected to database.")
 
 	logrus.Info("Starting migration.")
 	m, err := migrate.New(
