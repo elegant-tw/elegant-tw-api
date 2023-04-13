@@ -17,7 +17,7 @@ func NewpostgresqlSentenceRepoistory(db *sql.DB) domain.SentenceRepository {
 }
 
 func (p *postgresqlSentenceRepository) GetRandomSentence(ctx context.Context) (*domain.Sentence, error) {
-	row := p.db.QueryRow("SELECT id, sentence, category_id, cite, author FROM sentences")
+	row := p.db.QueryRow("SELECT id, sentence, category_id, cite, author FROM sentences ORDER BY RANDOM() LIMIT 1")
 	d := &domain.Sentence{}
 	if err := row.Scan(&d.ID, &d.Sentence, &d.Category, &d.Cite, &d.Author); err != nil {
 		logrus.Error(err)
