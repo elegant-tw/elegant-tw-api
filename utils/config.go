@@ -30,7 +30,7 @@ func Read() (*Config, error) {
 
 	viper.SetConfigType("dotenv")
 	if err := viper.ReadInConfig(); err != nil {
-		logrus.Fatalf("Fatal error config file: %v\n", err)
+		logrus.Warnf("Warning, there is no config file: %v\n", err)
 	}
 
 	// Unmarshal the configuration
