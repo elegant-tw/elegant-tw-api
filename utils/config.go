@@ -52,6 +52,12 @@ func Read() (*Config, error) {
 	viper.BindEnv("SERVER_PORT")
 	viper.SetDefault("SERVER_PORT", 3000)
 
+	viper.BindEnv("SENTRY_ENABLED")
+	viper.SetDefault("SENTRY_ENABLED", false)
+	viper.BindEnv("SENTRY_DSN")
+	viper.BindEnv("SENTRY_TRACESRATE")
+	viper.SetDefault("SENTRY_TRACESRATE", 1.0)
+
 	viper.SetConfigType("dotenv")
 	if err := viper.ReadInConfig(); err != nil {
 		logrus.Warnf("Warning, there is no config file: %v\n", err)
