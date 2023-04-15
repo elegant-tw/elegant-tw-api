@@ -14,12 +14,13 @@ import (
 
 func TestGetRandomSentence(t *testing.T) {
 	mockSentenceRepo := new(mocks.SentenceRepository)
+	mockCite := "Counter-Strike: Global Offensive"
 	mockSentence := domain.Sentence{
 		ID:       0,
-		Sentence: "Go Go Go",
+		Sentence: "Go! Go! Go!",
 		Category: 0,
-		Cite:     "CSGO",
-		Author:   "No one",
+		Cite:     &mockCite,
+		Author:   nil,
 	}
 
 	t.Run("Success", func(t *testing.T) {

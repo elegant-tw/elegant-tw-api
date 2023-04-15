@@ -15,12 +15,13 @@ import (
 )
 
 func TestGetRandomSentence(t *testing.T) {
+	mockCite := "Counter-Strike: Global Offensive"
 	mockSentence := domain.Sentence{
 		ID:       0,
-		Sentence: "Go Go Go",
+		Sentence: "Go! Go! Go!",
 		Category: 0,
-		Cite:     "CSGO",
-		Author:   "No one",
+		Cite:     &mockCite,
+		Author:   nil,
 	}
 	mockSentenceMarshal, _ := json.Marshal(mockSentence)
 	mockSentenceCase := new(mocks.SentenceUsecase)

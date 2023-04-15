@@ -69,6 +69,8 @@ func main() {
 		} else {
 			logrus.Fatal(err)
 		}
+	} else {
+		logrus.Info("Migration completed.")
 	}
 
 	gin.SetMode(cfg.GinMode)
