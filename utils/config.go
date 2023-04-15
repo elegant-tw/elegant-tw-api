@@ -22,6 +22,14 @@ type Config struct {
 	// HTTP Server Port
 	ServerAddr string `mapstructure:"SERVER_ADDR"`
 	ServerPort string `mapstructure:"SERVER_PORT"`
+
+	// Rate Limit
+	RateLimitEnabled     bool   `mapstructure:"RATE_LIMIT_ENABLED"`
+	RateLimitFormatted   string `mapstructure:"RATE_LIMIT_FORMATTED"`
+	RateLimitStoreRedis  bool   `mapstructure:"RATE_LIMIT_STORE_REDIS"`
+	RateLimitRedisHost   string `mapstructure:"RATE_LIMIT_REDIS_HOST"`
+	RateLimitRedisPort   string `mapstructure:"RATE_LIMIT_REDIS_PORT"`
+	RateLimitRedisPrefix string `mapstructure:"RATE_LIMIT_REDIS_PREFIX"`
 }
 
 func Read() (*Config, error) {
@@ -46,6 +54,18 @@ func Read() (*Config, error) {
 	viper.SetDefault("SERVER_ADDR", "0.0.0.0")
 	viper.BindEnv("SERVER_PORT")
 	viper.SetDefault("SERVER_PORT", 3000)
+
+	viper.BindEnv("RATE_LIMIT_ENABLED")
+	viper.SetDefault("RATE_LIMIT_ENABLED", false)
+	viper.BindEnv("RATE_LIMIT_FORMATTED")
+	viper.SetDefault("RATE_LIMIT_FORMATTED", "10-S")
+	viper.BindEnv("RATE_LIMIT_STORE_REDIS")
+	viper.SetDefault("RATE_LIMIT_STORE_REDIS", false)
+	viper.BindEnv("RATE_LIMIT_REDIS_HOST")
+	viper.BindEnv("RATE_LIMIT_REDIS_PORT")
+	viper.SetDefault("RATE_LIMIT_REDIS_PORT", 6379)
+	viper.BindEnv("RATE_LIMIT_REDIS_PREFIX")
+	viper.SetDefault("RATE_LIMIT_REDIS_PREFIX", "elegant")
 
 	viper.SetConfigType("dotenv")
 	if err := viper.ReadInConfig(); err != nil {
