@@ -19,6 +19,9 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/sirupsen/logrus"
+	limiter "github.com/ulule/limiter/v3"
+	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
+	"github.com/ulule/limiter/v3/drivers/store/memory"
 
 	_ "github.com/lib/pq"
 )
@@ -70,12 +73,39 @@ func main() {
 
 	router := gin.Default()
 
+	if cfg.RateLimitEnabled {
+		logrus.Info("Rate limit is enable.")
+		rateLimitInit(router, cfg)
+	} else {
+		logrus.Info("Rate limit is disabled.")
+	}
+
 	sentenceRepo := _sentenceRepo.NewpostgresqlSentenceRepoistory(db)
 	sentenceUsecase := _sentenceUsecase.NewSentenceUsecase(sentenceRepo)
 	_sentenceHandlerHttpDelivery.NewSentenceHandler(router, sentenceUsecase)
 
 	logrus.Info("HTTP server started.")
 	srvStart(router, *cfg)
+}
+
+func rateLimitInit(router *gin.Engine, cfg *utils.Config) {
+	rate, err := limiter.NewRateFromFormatted(cfg.RateLimitFormatted)
+
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	var store limiter.Store
+
+	if cfg.RateLimitStoreRedis {
+
+	} else {
+		logrus.Info("Rate limit stores in memory.")
+		store = memory.NewStore()
+	}
+	instance := limiter.New(store, rate)
+	middleware := mgin.NewMiddleware(instance)
+	logrus.Infof("Request limit is %d reqs / %s", rate.Limit, rate.Period)
 }
 
 func srvStart(router *gin.Engine, cfg utils.Config) {
