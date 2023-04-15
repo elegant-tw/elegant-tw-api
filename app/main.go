@@ -18,10 +18,12 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 	limiter "github.com/ulule/limiter/v3"
 	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
 	"github.com/ulule/limiter/v3/drivers/store/memory"
+	mredis "github.com/ulule/limiter/v3/drivers/store/redis"
 
 	_ "github.com/lib/pq"
 )
@@ -98,7 +100,15 @@ func rateLimitInit(router *gin.Engine, cfg *utils.Config) {
 	var store limiter.Store
 
 	if cfg.RateLimitStoreRedis {
-
+		logrus.Info("Rate limit stores in redis.")
+		client := redisInit(cfg)
+		mstore, err := mredis.NewStoreWithOptions(client, limiter.StoreOptions{
+			Prefix: cfg.RateLimitRedisPrefix,
+		})
+		if err != nil {
+			logrus.Panic(err)
+		}
+		store = mstore
 	} else {
 		logrus.Info("Rate limit stores in memory.")
 		store = memory.NewStore()
@@ -107,6 +117,20 @@ func rateLimitInit(router *gin.Engine, cfg *utils.Config) {
 	middleware := mgin.NewMiddleware(instance)
 	router.Use(middleware)
 	logrus.Infof("Request limit is %d reqs / %s", rate.Limit, rate.Period)
+}
+
+func redisInit(cfg *utils.Config) *redis.Client {
+	logrus.Info("Connecting redis...")
+	rdb := redis.NewClient(&redis.Options{
+		Addr: cfg.RateLimitRedisHost + ":" + cfg.RateLimitRedisPort,
+	})
+	pong, err := rdb.Ping(context.Background()).Result()
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	logrus.Infof("Redis message: %+v", pong)
+	logrus.Infof("Connected redis. %+v")
+	return rdb
 }
 
 func srvStart(router *gin.Engine, cfg utils.Config) {
