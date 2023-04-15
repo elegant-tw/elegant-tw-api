@@ -105,6 +105,7 @@ func rateLimitInit(router *gin.Engine, cfg *utils.Config) {
 	}
 	instance := limiter.New(store, rate)
 	middleware := mgin.NewMiddleware(instance)
+	router.Use(middleware)
 	logrus.Infof("Request limit is %d reqs / %s", rate.Limit, rate.Period)
 }
 
