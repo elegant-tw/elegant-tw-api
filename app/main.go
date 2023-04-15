@@ -129,7 +129,7 @@ func redisInit(cfg *utils.Config) *redis.Client {
 		logrus.Fatal(err)
 	}
 	logrus.Infof("Redis message: %+v", pong)
-	logrus.Infof("Connected redis. %+v")
+	logrus.Infof("Connected redis.")
 	return rdb
 }
 
