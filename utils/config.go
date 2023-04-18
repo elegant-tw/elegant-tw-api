@@ -30,6 +30,10 @@ type Config struct {
 	RateLimitRedisHost   string `mapstructure:"RATE_LIMIT_REDIS_HOST"`
 	RateLimitRedisPort   string `mapstructure:"RATE_LIMIT_REDIS_PORT"`
 	RateLimitRedisPrefix string `mapstructure:"RATE_LIMIT_REDIS_PREFIX"`
+
+	// CORS
+	CORSAllowAllOrigin bool   `mapstructure:"CORS_ALLOW_ALL_ORIGINS"`
+	CORSAllowOrigins   string `mapstructure:"CORS_ALLOW_ORIGINS"`
 }
 
 func Read() (*Config, error) {
@@ -66,6 +70,9 @@ func Read() (*Config, error) {
 	viper.SetDefault("RATE_LIMIT_REDIS_PORT", 6379)
 	viper.BindEnv("RATE_LIMIT_REDIS_PREFIX")
 	viper.SetDefault("RATE_LIMIT_REDIS_PREFIX", "elegant")
+
+	viper.BindEnv("CORS_ALLOW_ALL_ORIGINS")
+	viper.BindEnv("CORS_ALLOW_ORIGINS")
 
 	viper.SetConfigType("dotenv")
 	if err := viper.ReadInConfig(); err != nil {
