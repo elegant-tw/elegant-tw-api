@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"fmt"
 	"net/http"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -15,23 +15,21 @@ import (
 	_sentenceUsecase "elegant-tw-api/sentence/usecase"
 	"elegant-tw-api/utils"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/redis/go-redis/v9"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/sirupsen/logrus"
-	limiter "github.com/ulule/limiter/v3"
-	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
-	"github.com/ulule/limiter/v3/drivers/store/memory"
-	mredis "github.com/ulule/limiter/v3/drivers/store/redis"
 
 	_ "github.com/lib/pq"
 )
 
-func main() {
+//go:embed db/migrations/*.sql
+var fs embed.FS
 
+func main() {
+	logrus.Info("Reading environment variables...")
 	cfg, err := utils.Read()
 	if err != nil {
 		logrus.Fatal(err)
@@ -54,9 +52,15 @@ func main() {
 	}
 	logrus.Info("Connected to database.")
 
+	logrus.Info("Preparing migrate database files.")
+	d, err := iofs.New(fs, "db/migrations")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	logrus.Info("Migrate database files are ready.")
+
 	logrus.Info("Starting migration.")
-	m, err := migrate.New(
-		"file://db/migrations",
+	m, err := migrate.NewWithSourceInstance("iofs", d,
 		fmt.Sprintf(
 			"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 			cfg.DBUsername, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName,
@@ -79,11 +83,11 @@ func main() {
 
 	router := gin.Default()
 
-	buildCORSConfig(router, cfg)
+	utils.BuildCORSConfig(router, cfg)
 
 	if cfg.RateLimitEnabled {
 		logrus.Info("Rate limit is enable.")
-		rateLimitInit(router, cfg)
+		utils.RateLimitInit(router, cfg)
 	} else {
 		logrus.Info("Rate limit is disabled.")
 	}
@@ -94,62 +98,6 @@ func main() {
 
 	logrus.Info("HTTP server started.")
 	srvStart(router, *cfg)
-}
-
-func buildCORSConfig(router *gin.Engine, cfg *utils.Config) {
-	corsConfig := cors.DefaultConfig()
-	if cfg.CORSAllowAllOrigin {
-		logrus.Info("Allow all origins: *")
-		corsConfig.AllowAllOrigins = true
-	} else {
-		allowOrigins := strings.Split(cfg.CORSAllowOrigins, ",")
-		logrus.Infof("Allow these origins: %+v", allowOrigins)
-		corsConfig.AllowOrigins = allowOrigins
-	}
-	router.Use(cors.New(corsConfig))
-}
-
-func rateLimitInit(router *gin.Engine, cfg *utils.Config) {
-	rate, err := limiter.NewRateFromFormatted(cfg.RateLimitFormatted)
-
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	var store limiter.Store
-
-	if cfg.RateLimitStoreRedis {
-		logrus.Info("Rate limit stores in redis.")
-		client := redisInit(cfg)
-		mstore, err := mredis.NewStoreWithOptions(client, limiter.StoreOptions{
-			Prefix: cfg.RateLimitRedisPrefix,
-		})
-		if err != nil {
-			logrus.Panic(err)
-		}
-		store = mstore
-	} else {
-		logrus.Info("Rate limit stores in memory.")
-		store = memory.NewStore()
-	}
-	instance := limiter.New(store, rate)
-	middleware := mgin.NewMiddleware(instance)
-	router.Use(middleware)
-	logrus.Infof("Request limit is %d reqs / %s", rate.Limit, rate.Period)
-}
-
-func redisInit(cfg *utils.Config) *redis.Client {
-	logrus.Info("Connecting redis...")
-	rdb := redis.NewClient(&redis.Options{
-		Addr: cfg.RateLimitRedisHost + ":" + cfg.RateLimitRedisPort,
-	})
-	pong, err := rdb.Ping(context.Background()).Result()
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	logrus.Infof("Redis message: %+v", pong)
-	logrus.Infof("Connected redis.")
-	return rdb
 }
 
 func srvStart(router *gin.Engine, cfg utils.Config) {
