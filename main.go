@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"fmt"
 	"net/http"
 	"os/signal"
@@ -20,6 +21,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 	limiter "github.com/ulule/limiter/v3"
@@ -29,6 +31,9 @@ import (
 
 	_ "github.com/lib/pq"
 )
+
+//go:embed db/migrations/*.sql
+var fs embed.FS
 
 func main() {
 
@@ -54,9 +59,13 @@ func main() {
 	}
 	logrus.Info("Connected to database.")
 
+	d, err := iofs.New(fs, "db/migrations")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
 	logrus.Info("Starting migration.")
-	m, err := migrate.New(
-		"file://db/migrations",
+	m, err := migrate.NewWithSourceInstance("iofs", d,
 		fmt.Sprintf(
 			"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 			cfg.DBUsername, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName,
