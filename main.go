@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -16,7 +15,6 @@ import (
 	_sentenceUsecase "elegant-tw-api/sentence/usecase"
 	"elegant-tw-api/utils"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -88,7 +86,7 @@ func main() {
 
 	router := gin.Default()
 
-	buildCORSConfig(router, cfg)
+	utils.BuildCORSConfig(router, cfg)
 
 	if cfg.RateLimitEnabled {
 		logrus.Info("Rate limit is enable.")
@@ -103,19 +101,6 @@ func main() {
 
 	logrus.Info("HTTP server started.")
 	srvStart(router, *cfg)
-}
-
-func buildCORSConfig(router *gin.Engine, cfg *utils.Config) {
-	corsConfig := cors.DefaultConfig()
-	if cfg.CORSAllowAllOrigin {
-		logrus.Info("Allow all origins: *")
-		corsConfig.AllowAllOrigins = true
-	} else {
-		allowOrigins := strings.Split(cfg.CORSAllowOrigins, ",")
-		logrus.Infof("Allow these origins: %+v", allowOrigins)
-		corsConfig.AllowOrigins = allowOrigins
-	}
-	router.Use(cors.New(corsConfig))
 }
 
 func rateLimitInit(router *gin.Engine, cfg *utils.Config) {
