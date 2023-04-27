@@ -29,7 +29,7 @@ import (
 var fs embed.FS
 
 func main() {
-
+	logrus.Info("Reading environment variables...")
 	cfg, err := utils.Read()
 	if err != nil {
 		logrus.Fatal(err)
@@ -52,10 +52,12 @@ func main() {
 	}
 	logrus.Info("Connected to database.")
 
+	logrus.Info("Preparing migrate database files.")
 	d, err := iofs.New(fs, "db/migrations")
 	if err != nil {
 		logrus.Fatal(err)
 	}
+	logrus.Info("Migrate database files are ready.")
 
 	logrus.Info("Starting migration.")
 	m, err := migrate.NewWithSourceInstance("iofs", d,
