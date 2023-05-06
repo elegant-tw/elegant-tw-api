@@ -25,3 +25,12 @@ func (su *sentenceUsecase) GetRandomSentence(ctx context.Context) (*domain.Sente
 	}
 	return aSentence, nil
 }
+
+func (su *sentenceUsecase) GetRandomSentenceWithToxic(ctx context.Context) (*domain.Sentence, error) {
+	aSentence, err := su.sentenceRepo.GetRandomSentenceWithToxic(ctx)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+	return aSentence, nil
+}
