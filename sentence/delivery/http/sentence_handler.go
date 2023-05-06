@@ -17,6 +17,7 @@ func NewSentenceHandler(e *gin.Engine, sentenceUsecase domain.SentenceUsecase) {
 	}
 
 	e.GET("/", handler.GetRandomSentence)
+	e.GET("/all", handler.GetRandomSentenceWithToxic)
 	e.GET("/test", handler.Benchmark)
 }
 
@@ -30,6 +31,23 @@ func (s *SentenceHandler) GetRandomSentence(c *gin.Context) {
 	// category := c.Param("c")
 
 	aSentence, err := s.SentenceUsecase.GetRandomSentence(c)
+
+	if err != nil {
+		logrus.Error(err)
+		c.JSON(500, gin.H{
+			"status":  500,
+			"message": "Internal error. Please try again later.",
+		})
+		return
+	}
+
+	c.JSON(200, aSentence)
+}
+
+func (s *SentenceHandler) GetRandomSentenceWithToxic(c *gin.Context) {
+	// category := c.Param("c")
+
+	aSentence, err := s.SentenceUsecase.GetRandomSentenceWithToxic(c)
 
 	if err != nil {
 		logrus.Error(err)
