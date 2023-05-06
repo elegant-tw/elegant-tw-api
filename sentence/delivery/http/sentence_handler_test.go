@@ -43,3 +43,33 @@ func TestGetRandomSentence(t *testing.T) {
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, string(mockSentenceMarshal), w.Body.String())
 }
+
+func TestGetRandomSentenceWithToxic(t *testing.T) {
+	mockCite := "Counter-Strike: Global Offensive"
+	mockSentence := domain.Sentence{
+		ID:       0,
+		Sentence: "Go! Go! Go!",
+		Category: 0,
+		Cite:     &mockCite,
+		Author:   nil,
+	}
+	mockSentenceMarshal, _ := json.Marshal(mockSentence)
+	mockSentenceCase := new(mocks.SentenceUsecase)
+
+	mockSentenceCase.On("GetRandomSentenceWithToxic", mock.Anything).Return(&mockSentence, nil)
+
+	r := gin.Default()
+
+	handler := sentenceHandlerHttpDelivery.SentenceHandler{
+		SentenceUsecase: mockSentenceCase,
+	}
+
+	r.GET("/all", handler.GetRandomSentenceWithToxic)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/all", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, 200, w.Code)
+	assert.Equal(t, string(mockSentenceMarshal), w.Body.String())
+}

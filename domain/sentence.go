@@ -12,8 +12,10 @@ type Sentence struct {
 
 type SentenceRepository interface {
 	GetRandomSentence(ctx context.Context) (*Sentence, error)
+	GetRandomSentenceWithToxic(ctx context.Context) (*Sentence, error)
 }
 
 type SentenceUsecase interface {
 	GetRandomSentence(ctx context.Context) (*Sentence, error)
+	GetRandomSentenceWithToxic(ctx context.Context) (*Sentence, error)
 }
