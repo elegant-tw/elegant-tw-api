@@ -25,3 +25,6 @@ go.work
 
 # Temporary file
 tmp/
+
+# macOS system file
+.DS_Store
